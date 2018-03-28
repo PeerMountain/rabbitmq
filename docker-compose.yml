@@ -5,7 +5,7 @@ services:
     build:
       dockerfile: Dockerfile-haproxy
       context: ./
-    image: 'peer-mountain01:5005/teleferic-mvp/rabbitmq-proxy:${TAG:-latest}'
+    image: 'peer-mountain01:5005/teleferic-mvp/rabbitmq/proxy:${TAG:-latest}'
     networks:
       - rabbitmq
 
