@@ -1,0 +1,76 @@
+version: "3.4"
+
+services:
+  rabbitmq-proxy:
+    build:
+      dockerfile: Dockerfile-haproxy
+      context: ./
+    image: 'peer-mountain01:5005/teleferic-mvp/rabbitmq-proxy:${TAG:-latest}'
+    networks:
+      - rabbitmq
+
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+      restart_policy:
+        condition: 'on-failure'
+
+  rabbitmq:
+    build:
+      dockerfile: Dockerfile-rabbitmq
+      context: ./
+    image: 'peer-mountain01:5005/teleferic-mvp/rabbitmq:${TAG:-latest}'
+    ports:
+      - 15672:15672
+    environment:
+      - RABBITMQ_ERLANG_COOKIE=veZpRSr6dB3aq2cD
+    networks:
+      - consul
+      - rabbitmq
+    hostname: rabbitmq
+    volumes:
+      - /data/rabbitmq:/var/lib/rabbitmq
+
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+      restart_policy:
+        condition: 'on-failure'
+      placement:
+        constraints:
+          - node.labels.rabbitmq == 1
+
+  rabbitmq2:
+    image: 'peer-mountain01:5005/teleferic-mvp/rabbitmq:${TAG:-latest}'
+    environment:
+      - RABBITMQ_ERLANG_COOKIE=veZpRSr6dB3aq2cD
+    networks:
+      - consul
+      - rabbitmq
+    hostname: rabbitmq2
+    volumes:
+      - /data/rabbitmq:/var/lib/rabbitmq
+
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+      restart_policy:
+        condition: 'on-failure'
+      placement:
+        constraints:
+          - node.labels.rabbitmq == 2
+
+networks:
+  consul:
+    external: true
+  rabbitmq:
+    external: true
